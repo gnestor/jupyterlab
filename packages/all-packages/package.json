@@ -43,6 +43,7 @@
     "@jupyterlab/imageviewer-extension": "^0.7.0",
     "@jupyterlab/inspector": "^0.7.0",
     "@jupyterlab/inspector-extension": "^0.7.0",
+    "@jupyterlab/jsonviewer": "^0.7.0",
     "@jupyterlab/launcher": "^0.7.0",
     "@jupyterlab/launcher-extension": "^0.7.1",
     "@jupyterlab/markdownviewer-extension": "^0.7.0",

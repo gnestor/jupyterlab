@@ -17,7 +17,10 @@
       true,
       "check-space"
     ],
-    "curly": true,
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
     "eofline": true,
     "forin": false,
     "indent": [
@@ -95,7 +98,8 @@
     "quotemark": [
       true,
       "single",
-      "avoid-escape"
+      "avoid-escape",
+      "jsx-double"
     ],
     "radix": true,
     "semicolon": [true, "always"],
