@@ -44,6 +44,7 @@
     "@jupyterlab/notebook": "^0.7.0",
     "@jupyterlab/notebook-extension": "^0.7.0",
     "@jupyterlab/outputarea": "^0.7.0",
+    "@jupyterlab/plotlyviewer": "^0.7.0",
     "@jupyterlab/rendermime": "^0.7.0",
     "@jupyterlab/running": "^0.7.0",
     "@jupyterlab/running-extension": "^0.7.0",
@@ -137,6 +138,7 @@
     "mimeExtensions": [
       "@jupyterlab/geojsonviewer",
       "@jupyterlab/jsonviewer",
+      "@jupyterlab/plotlyviewer",
       "@jupyterlab/vega"
     ],
     "singletonPackages": [

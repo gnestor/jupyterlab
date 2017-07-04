@@ -39,6 +39,7 @@ import "@jupyterlab/markdownviewer-extension";
 import "@jupyterlab/notebook";
 import "@jupyterlab/notebook-extension";
 import "@jupyterlab/outputarea";
+import "@jupyterlab/plotlyviewer";
 import "@jupyterlab/rendermime";
 import "@jupyterlab/running";
 import "@jupyterlab/running-extension";
