@@ -2,14 +2,6 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  JSONObject, PromiseDelegate
-} from '@phosphor/coreutils';
-
-import {
-  Message,
-} from '@phosphor/messaging';
-
-import {
   Widget
 } from '@phosphor/widgets';
 
@@ -53,7 +45,7 @@ const URL_TEMPLATE: string = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
  * The options for leaflet tile layers.
  * See http://leafletjs.com/reference-1.0.3.html#tilelayer
  */
-const LAYER_OPTIONS: JSONObject = {
+const LAYER_OPTIONS: leaflet.TileLayerOptions = {
   attribution: 'Map data (c) <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
   minZoom: 0,
   maxZoom: 18
@@ -61,56 +53,43 @@ const LAYER_OPTIONS: JSONObject = {
 
 
 export
-class RenderedGeoJSON extends Widget implements IRenderMime.IReadyWidget {
+class RenderedGeoJSON extends Widget implements IRenderMime.IRenderer {
   /**
    * Create a new widget for rendering Vega/Vega-Lite.
    */
-  constructor(options: IRenderMime.IRenderOptions) {
+  constructor(options: IRenderMime.IRendererOptions) {
     super();
     this.addClass(CSS_CLASS);
-    this._model = options.model;
     this._mimeType = options.mimeType;
   }
-
-  /**
-   * A promise that resolves when the widget is ready.
-   */
-  get ready(): Promise<void> {
-    return this._ready.promise;
-  }
-
+  
   /**
    * Dispose of the widget.
    */
   dispose(): void {
-    this._model = null;
     this._map.remove();
     this._map = null;
     super.dispose();
   }
 
   /**
-   * Trigger rendering after the widget is attached to the DOM.
+   * Render GeoJSON into this widget's node.
    */
-  onAfterAttach(msg: Message): void {
-    this._render();
-  }
-
-  /**
-   * Actual render Vega/Vega-Lite into this widget's node.
-   */
-  private _render(): void {
-    const data = this._model.data.get(this._mimeType) as JSONObject | GeoJSON.GeoJsonObject;
-    const metadata = this._model.metadata.get(this._mimeType) as JSONObject || {};
-    this._map = leaflet.map(this.node).fitWorld();
-    this._map.scrollWheelZoom.disable();
-    leaflet.tileLayer(
-      metadata.url_template as string || URL_TEMPLATE,
-      metadata.layer_options as JSONObject || LAYER_OPTIONS
-    ).addTo(this._map);
-    this._geoJSONLayer = leaflet.geoJSON(data as GeoJSON.GeoJsonObject).addTo(this._map);
-    this._map.fitBounds(this._geoJSONLayer.getBounds());
-    this._map.invalidateSize();
+  renderModel(model: IRenderMime.IMimeModel): Promise<void> {
+    const data = model.data[this._mimeType] as any | GeoJSON.GeoJsonObject;
+    const metadata = model.metadata[this._mimeType] as any || {};
+    return new Promise<void>((resolve, reject) => {
+      this._map = leaflet.map(this.node).fitWorld();
+      this._map.scrollWheelZoom.disable();
+      leaflet.tileLayer(
+        metadata.url_template || URL_TEMPLATE,
+        metadata.layer_options || LAYER_OPTIONS
+      ).addTo(this._map);
+      this._geoJSONLayer = leaflet.geoJSON(data).addTo(this._map);
+      this._map.fitBounds(this._geoJSONLayer.getBounds());
+      this._map.invalidateSize();
+      resolve(undefined);
+    });
   }
 
   /**
@@ -127,40 +106,38 @@ class RenderedGeoJSON extends Widget implements IRenderMime.IReadyWidget {
   private _geoJSONLayer: leaflet.GeoJSON;
   private _width = -1;
   private _height = -1;
-  private _model: IRenderMime.IMimeModel = null;
   private _mimeType: string;
-  private _ready = new PromiseDelegate<void>();
 }
 
 
 /**
- * A mime renderer for Vega/Vega-Lite data.
+ * A mime renderer factory for GeoJSON data.
  */
 export
-class GeoJSONRenderer implements IRenderMime.IRenderer {
+class GeoJSONRendererFactory implements IRenderMime.IRendererFactory {
   /**
    * The mimeTypes this renderer accepts.
    */
   mimeTypes = [MIME_TYPE];
 
   /**
-   * Whether the renderer can render given the render options.
+   * Whether the renderer can create a renderer given the render options.
    */
-  canRender(options: IRenderMime.IRenderOptions): boolean {
+  canCreateRenderer(options: IRenderMime.IRendererOptions): boolean {
     return this.mimeTypes.indexOf(options.mimeType) !== -1;
   }
 
   /**
    * Render the transformed mime bundle.
    */
-  render(options: IRenderMime.IRenderOptions): IRenderMime.IReadyWidget {
+  createRenderer(options: IRenderMime.IRendererOptions): IRenderMime.IRenderer {
     return new RenderedGeoJSON(options);
   }
 
   /**
    * Whether the renderer will sanitize the data given the render options.
    */
-  wouldSanitize(options: IRenderMime.IRenderOptions): boolean {
+  wouldSanitize(options: IRenderMime.IRendererOptions): boolean {
     return false;
   }
 }
@@ -169,10 +146,10 @@ class GeoJSONRenderer implements IRenderMime.IRenderer {
 const extensions: IRenderMime.IExtension | IRenderMime.IExtension[] = [
   {
     mimeType: MIME_TYPE,
-    renderer: new GeoJSONRenderer(),
-    rendererIndex: 0,
+    rendererFactory: new GeoJSONRendererFactory(),
+    rank: 0,
     dataType: 'json',
-    widgetFactoryOptions: {
+    documentWidgetFactoryOptions: {
       name: 'GeoJSON',
       fileExtensions: ['.geojson', '.geo.json'],
       defaultFor: ['.geojson', '.geo.json'],

@@ -3,10 +3,12 @@
   Distributed under the terms of the Modified BSD License.
 */
 
+/* Add CSS variables to :root */
 :root {
   /*--jp-private-geojsonviewer-variable: 16px;*/
 }
 
+/* Base styles */
 .jp-RenderedGeoJSON {
   width: 100%;
   height: 100%;
@@ -14,11 +16,12 @@
   overflow: hidden;
 }
 
-.jp-GeoJSONViewer .jp-RenderedGeoJSON {
+/* Document styles */
+.jp-MimeRenderer .jp-RenderedGeoJSON {
   
 }
 
+/* Document styles */
 .jp-OutputArea .jp-RenderedGeoJSON {
-  margin-top: 5px;
   height: 360px;
 }
