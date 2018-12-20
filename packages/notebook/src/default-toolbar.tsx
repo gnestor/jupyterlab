@@ -258,6 +258,14 @@ export class CellTypeSwitcher extends VDomRenderer<any> {
     if (this._notebook.activeCell) {
       value = this._notebook.activeCell.model.type;
     }
+    for (let widget of this._notebook.widgets) {
+      if (this._notebook.isSelectedOrActive(widget)) {
+        if (widget.model.type !== value) {
+          value = '-';
+          break;
+        }
+      }
+    }
     return (
       <HTMLSelect
         className={TOOLBAR_CELLTYPE_DROPDOWN_CLASS}
@@ -266,6 +274,7 @@ export class CellTypeSwitcher extends VDomRenderer<any> {
         value={value}
         minimal
       >
+        <option value="-">-</option>
         <option value="code">Code</option>
         <option value="markdown">Markdown</option>
         <option value="raw">Raw</option>
