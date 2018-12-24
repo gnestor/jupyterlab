@@ -30,6 +30,7 @@
     "watch": "tsc -b --watch"
   },
   "dependencies": {
+    "@jupyterlab/apputils": "^0.19.1",
     "@jupyterlab/rendermime-interfaces": "^1.2.1",
     "@jupyterlab/ui-components": "^0.0.1",
     "@phosphor/coreutils": "^1.3.0",

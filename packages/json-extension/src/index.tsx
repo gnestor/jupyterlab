@@ -3,6 +3,8 @@
 
 import { IRenderMime } from '@jupyterlab/rendermime-interfaces';
 
+import { ToolbarButton } from '@jupyterlab/apputils';
+
 import { Widget } from '@phosphor/widgets';
 
 import * as React from 'react';
@@ -36,6 +38,7 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
     this.addClass('CodeMirror');
     this.addClass('cm-s-jupyter');
     this._mimeType = options.mimeType;
+    this._expanded = false;
   }
 
   /**
@@ -56,6 +59,7 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
   }
 
   private _mimeType: string;
+  public _expanded: boolean;
 }
 
 /**
@@ -77,7 +81,20 @@ const extensions: IRenderMime.IExtension | IRenderMime.IExtension[] = [
       name: 'JSON',
       primaryFileType: 'json',
       fileTypes: ['json', 'notebook'],
-      defaultFor: ['json']
+      defaultFor: ['json'],
+      toolbarFactory: (widget: RenderedJSON) => {
+        const button = new ToolbarButton({
+          className: 'jp-ToolbarButtonComponent',
+          onClick: () => {
+            widget._expanded = !widget._expanded;
+            widget.update();
+          },
+          iconClassName: `${
+            widget._expanded ? 'jp-ExpandLessIcon' : 'jp-ExpandMoreIcon'
+          } jp-Icon jp-Icon-16`
+        });
+        return [{ name: 'expand', widget: button }];
+      }
     }
   }
 ];
