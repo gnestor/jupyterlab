@@ -25,13 +25,32 @@
   width: 100%;
 }
 
-.jp-RenderedJSON .filter {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 33%;
-  max-width: 150px;
-  z-index: 10;
+/* Toolbar styles */
+.jp-Toolbar .jp-Toolbar-item:last-of-type {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jp-Toolbar .filter {
+  display: flex;
+}
+
+.jp-Toolbar .filter input {
+  height: 24px;
+}
+
+.jp-Toolbar .bp3-input-action {
+  height: 100%;
+}
+
+.jp-Toolbar .bp3-input-action .jp-InputGroupAction {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0;
+  padding-right: 6px;
 }
 
 /* Document styles */

@@ -9,57 +9,26 @@ import JSONTree from 'react-json-tree';
 
 import { JSONArray, JSONObject, JSONValue } from '@phosphor/coreutils';
 
-import { InputGroup } from '@jupyterlab/ui-components';
-
 /**
  * The properties for the JSON tree component.
  */
 export interface IProps {
   data: JSONValue;
-  metadata?: JSONObject;
-}
-
-/**
- * The state of the JSON tree component.
- */
-export interface IState {
-  filter?: string;
-  value: string;
+  metadata: JSONObject & { expanded: boolean; filter: string };
 }
 
 /**
  * A component that renders JSON data as a collapsible tree.
  */
-export class Component extends React.Component<IProps, IState> {
-  state = { filter: '', value: '' };
-
-  timer: number = 0;
-
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    this.setState({ value });
-    window.clearTimeout(this.timer);
-    this.timer = window.setTimeout(() => {
-      this.setState({ filter: value });
-    }, 300);
-  };
-
+export class Component extends React.Component<IProps, null> {
   render() {
     const { data, metadata } = this.props;
     const root = metadata && metadata.root ? (metadata.root as string) : 'root';
-    const keyPaths = this.state.filter
-      ? filterPaths(data, this.state.filter, [root])
+    const keyPaths = metadata.filter
+      ? filterPaths(data, metadata.filter, [root])
       : [root];
     return (
       <div className="container">
-        <InputGroup
-          className="filter"
-          type="text"
-          placeholder="Filter..."
-          onChange={this.handleChange}
-          value={this.state.value}
-          rightIcon="search"
-        />
         <JSONTree
           data={data}
           collectionLimit={100}
@@ -85,7 +54,7 @@ export class Component extends React.Component<IProps, IState> {
             return (
               <span className="cm-keyword">
                 <Highlight
-                  search={this.state.filter}
+                  search={metadata.filter}
                   matchStyle={{ backgroundColor: 'yellow' }}
                 >
                   {`${label}: `}
@@ -104,7 +73,7 @@ export class Component extends React.Component<IProps, IState> {
             return (
               <span className={className}>
                 <Highlight
-                  search={this.state.filter}
+                  search={metadata.filter}
                   matchStyle={{ backgroundColor: 'yellow' }}
                 >
                   {`${raw}`}
