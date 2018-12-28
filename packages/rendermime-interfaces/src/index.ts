@@ -237,6 +237,7 @@ export namespace IRenderMime {
      * of the widget to update it if and when new data is available.
      */
     renderModel(model: IMimeModel): Promise<void>;
+    renderToolbar(model: IMimeModel): IToolbarItem[];
   }
 
   /**

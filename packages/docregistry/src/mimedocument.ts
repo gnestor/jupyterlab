@@ -11,6 +11,8 @@ import {
   MimeModel
 } from '@jupyterlab/rendermime';
 
+import { each } from '@phosphor/algorithm';
+
 import { JSONObject, PromiseDelegate, JSONExt } from '@phosphor/coreutils';
 
 import { Message, MessageLoop } from '@phosphor/messaging';
@@ -152,6 +154,17 @@ export class MimeContent extends Widget {
       // Do the rendering asynchronously.
       this._isRendering = true;
       await this.renderer.renderModel(mimeModel);
+      if (this.renderer.renderToolbar) {
+        const items = this.renderer.renderToolbar(mimeModel);
+        const toolbar = (this.parent as MimeDocument).toolbar;
+        // Remove all children from toolbar
+        each(toolbar.children(), child => {
+          toolbar.layout.removeWidget(child);
+        });
+        each(items, (item, index) => {
+          toolbar.insertItem(index, item.name, item.widget);
+        });
+      }
       this._isRendering = false;
 
       // If there is an outstanding request to render, go ahead and render

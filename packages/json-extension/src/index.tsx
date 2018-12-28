@@ -7,10 +7,6 @@ import { ToolbarButton, ReactElementWidget } from '@jupyterlab/apputils';
 
 import { Widget } from '@phosphor/widgets';
 
-import { each } from '@phosphor/algorithm';
-
-import { MimeDocument } from '@jupyterlab/docregistry';
-
 import * as React from 'react';
 
 import * as ReactDOM from 'react-dom';
@@ -79,10 +75,9 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
    * Render JSON into this widget's node.
    */
   renderModel(model: IRenderMime.IMimeModel): Promise<void> {
-    this._model = model;
-    const data = this._model.data[this._mimeType] as any;
-    const metadata = (this._model.metadata[this._mimeType] as any) || {};
     return new Promise<void>((resolve, reject) => {
+      const data = model.data[this._mimeType] as any;
+      const metadata = (model.metadata[this._mimeType] as any) || {};
       ReactDOM.render(
         <Component
           data={data}
@@ -100,12 +95,7 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
     });
   }
 
-  onUpdateRequest() {
-    this.renderModel(this._model);
-    this.renderToolbar();
-  }
-
-  renderToolbar = () => {
+  renderToolbar(model?: IRenderMime.IMimeModel): IRenderMime.IToolbarItem[] {
     const expand = new ToolbarButton({
       className: 'jp-ToolbarButtonComponent',
       label: this._expanded ? 'Collapse All' : 'Expand All',
@@ -117,14 +107,15 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
       placeholder: 'Filter...',
       onChange: this.handleFilter
     });
-    const toolbar = (this.parent.parent as MimeDocument).toolbar;
-    // Remove all children from toolbar
-    each(toolbar.children(), child => {
-      toolbar.layout.removeWidget(child);
-    });
-    toolbar.insertItem(0, 'expand', expand);
-    toolbar.insertItem(1, 'search', search);
-  };
+    return [
+      { name: 'expand', widget: expand },
+      { name: 'search', widget: search }
+    ];
+  }
+
+  onUpdateRequest() {
+    this.parent.update();
+  }
 
   toggleExpand = () => {
     this._expanded = !this._expanded;
@@ -141,7 +132,6 @@ export class RenderedJSON extends Widget implements IRenderMime.IRenderer {
   };
 
   private _mimeType: string;
-  private _model: IRenderMime.IMimeModel;
   public _expanded: boolean;
   public _filter: string;
   private _timer: number;
@@ -168,24 +158,7 @@ const extensions: IRenderMime.IExtension | IRenderMime.IExtension[] = [
       fileTypes: ['json', 'notebook'],
       defaultFor: ['json'],
       toolbarFactory: (widget: RenderedJSON) => {
-        const button = new ToolbarButton({
-          className: 'jp-ToolbarButtonComponent',
-          label: widget._expanded ? 'Collapse All' : 'Expand All',
-          tooltip: widget._expanded ? 'Collapse All' : 'Expand All',
-          onClick: widget.toggleExpand
-          // iconClassName: `${
-          //   widget.isExpanded() ? 'jp-ExpandLessIcon' : 'jp-ExpandMoreIcon'
-          // } jp-Icon jp-Icon-16`
-        });
-        const search = new ToolbarInput({
-          className: 'filter',
-          placeholder: 'Filter...',
-          onChange: widget.handleFilter
-        });
-        return [
-          { name: 'expand', widget: button },
-          { name: 'search', widget: search }
-        ];
+        return widget.renderToolbar();
       }
     }
   }
