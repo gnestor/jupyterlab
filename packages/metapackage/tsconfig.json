@@ -218,6 +218,9 @@
     },
     {
       "path": "../vega4-extension"
+    },
+    {
+      "path": "../transform-vdom"
     }
   ]
 }

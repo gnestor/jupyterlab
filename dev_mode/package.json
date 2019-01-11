@@ -83,6 +83,7 @@
     "@jupyterlab/ui-components": "^1.0.0-alpha.3",
     "@jupyterlab/vdom-extension": "^1.0.0-alpha.3",
     "@jupyterlab/vega4-extension": "^1.0.0-alpha.3",
+    "@nteract/transform-vdom": "^3.0.4-alpha.0",
     "@phosphor/algorithm": "^1.1.2",
     "@phosphor/application": "^1.6.0",
     "@phosphor/commands": "^1.6.1",
@@ -303,6 +304,7 @@
       "@jupyterlab/theme-light-extension": "../packages/theme-light-extension",
       "@jupyterlab/tooltip": "../packages/tooltip",
       "@jupyterlab/tooltip-extension": "../packages/tooltip-extension",
+      "@nteract/transform-vdom": "../packages/transform-vdom",
       "@jupyterlab/ui-components": "../packages/ui-components",
       "@jupyterlab/vdom-extension": "../packages/vdom-extension",
       "@jupyterlab/vega4-extension": "../packages/vega4-extension"
