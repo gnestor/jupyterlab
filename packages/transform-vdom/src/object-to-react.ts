@@ -45,11 +45,15 @@ export interface EventHandlers {
 }
 
 export interface VDOMEl {
-  tagName: string; // Could be an enum honestly
+  tagName: string | React.LazyExoticComponent<React.ComponentType<any>>; // Could be an enum honestly
   children: React.ReactNode | VDOMEl | Array<React.ReactNode | VDOMEl>;
   attributes: Attributes;
   eventHandlers?: EventHandlers;
   key: number | string | null;
+  import?: {
+    package: string;
+    module?: string;
+  };
 }
 
 /**
@@ -70,6 +74,33 @@ export function objectToReactElement(
 
   if (!obj.tagName || typeof obj.tagName !== 'string') {
     throw new Error(`Invalid tagName on ${JSON.stringify(obj, null, 2)}`);
+  }
+
+  if (obj.import) {
+    if (!obj.import.package) {
+      throw new Error(
+        `Invalid import on ${JSON.stringify(
+          obj,
+          null,
+          2
+        )}. The 'import' map requires a 'package' and an optional 'module' property`
+      );
+    }
+    if (!obj.import.package.match(/^\.?\//)) {
+      obj.import.package = `//dev.jspm.io/${obj.import.package}`;
+    }
+    const component = React.lazy(() =>
+      eval(`import('${obj.import.package}')`).then((pkg: any) => {
+        if (pkg.default) {
+          pkg = pkg.default;
+        }
+        if (obj.import.module && pkg[obj.import.module]) {
+          pkg = pkg[obj.import.module];
+        }
+        return { default: pkg };
+      })
+    );
+    obj.tagName = component;
   }
 
   if (
