@@ -14,12 +14,16 @@ interface Props {
   onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void;
 }
 
+interface State {
+  error: Error | null;
+}
+
 // Provide object-to-react as an available helper on the library
 export { objectToReactElement, VDOMEl, Attributes, SerializedEvent };
 
 const mediaType = 'application/vdom.v1+json';
 
-export default class VDOM extends React.PureComponent<Props> {
+export default class VDOM extends React.PureComponent<Props, State> {
   static MIMETYPE = mediaType;
 
   static defaultProps = {
@@ -31,29 +35,27 @@ export default class VDOM extends React.PureComponent<Props> {
     }
   };
 
+  readonly state: State = {
+    error: null
+  };
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    this.setState({ error });
+  }
+
   render(): React.ReactElement<any> {
-    try {
-      // objectToReactElement is mutatitve so we'll clone our object
-      const obj = cloneDeep(this.props.data);
-      return objectToReactElement(obj, this.props.onVDOMEvent);
-    } catch (err) {
+    if (this.state.error) {
       return (
         <React.Fragment>
-          <pre
-            style={{
-              backgroundColor: 'ghostwhite',
-              color: 'black',
-              fontWeight: 600,
-              display: 'block',
-              padding: '10px',
-              marginBottom: '20px'
-            }}
-          >
-            There was an error rendering VDOM data from the kernel or notebook
-          </pre>
-          <code>{err.toString()}</code>
+          <code>{this.state.error.toString()}</code>
         </React.Fragment>
       );
     }
+    const obj = cloneDeep(this.props.data);
+    return (
+      <React.Suspense fallback={null}>
+        {objectToReactElement(obj, this.props.onVDOMEvent)}
+      </React.Suspense>
+    );
   }
 }
