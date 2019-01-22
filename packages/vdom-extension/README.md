@@ -1,8 +1,10 @@
 # vdom-extension
 
+[![Binder](https://beta.mybinder.org/badge.svg)](https://mybinder.org/v2/gh/gnestor/jupyterlab/vdom-react-demo?urlpath=lab/tree/packages/vdom-extension/notebooks/vdom-react.ipynb)
+
 A JupyterLab extension for rendering VirtualDOM using React
 
-![demo](http://g.recordit.co/EIwAIBsGBh.gif)
+![demo](https://drive.google.com/uc?export=view&id=1ghS2Lc8UaCt0s0w7ogPF4kVraSq96WKv)
 
 ## Prerequisites
 
