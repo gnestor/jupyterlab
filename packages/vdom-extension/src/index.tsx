@@ -45,6 +45,7 @@ export class RenderedVDOM extends Widget implements IRenderMime.IRenderer {
     this.addClass('jp-RenderedHTML');
     this.addClass('jp-RenderedHTMLCommon');
     this._mimeType = options.mimeType;
+    this._resolver = options.resolver;
     // Get current kernel session (hack for mimerender extension)
     this._session = (options.resolver as any)._session;
   }
@@ -76,7 +77,11 @@ export class RenderedVDOM extends Widget implements IRenderMime.IRenderer {
       const data = model.data[this._mimeType] as any;
       // const metadata = model.metadata[this._mimeType] as any || {};
       ReactDOM.render(
-        <VDOM data={data} onVDOMEvent={this.handleVDOMEvent} />,
+        <VDOM
+          data={data}
+          onVDOMEvent={this.handleVDOMEvent}
+          resolveImport={this.resolveImport}
+        />,
         this.node,
         () => {
           resolve();
@@ -106,7 +111,34 @@ export class RenderedVDOM extends Widget implements IRenderMime.IRenderer {
     }, 16);
   };
 
+  /**
+   * Resolve relative import paths.
+   */
+  resolveImport = (path: string) => {
+    if (path.match(/^(?:https?:)?\/\//)) {
+      // If absolute path
+      return path;
+    } else if (path.match(/^\.?\//)) {
+      // If relative path
+      const base = `${location.href.replace('lab', 'files')}/${
+        this._resolver._session.path
+      }`;
+      const url = new URL(path, base);
+      if (!url.pathname.endsWith('.js')) {
+        // Append `.js` to path
+        url.pathname = `${url.pathname}.js`;
+      }
+      // Append unique search string to path to bust browser cache
+      url.search = `${Date.now()}`;
+      return url.href;
+    } else {
+      // If npm package
+      return `//dev.jspm.io/${path}`;
+    }
+  };
+
   private _mimeType: string;
+  private _resolver: any;
   private _session: Session.ISession;
   private _comms: { [targetName: string]: Kernel.IComm } = {};
   private _timer: number;

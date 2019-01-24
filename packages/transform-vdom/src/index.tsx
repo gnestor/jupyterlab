@@ -12,6 +12,7 @@ interface Props {
   mediaType: 'application/vdom.v1+json';
   data: VDOMEl;
   onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void;
+  resolveImport: (path: string) => string;
 }
 
 interface State {
@@ -46,15 +47,22 @@ export default class VDOM extends React.PureComponent<Props, State> {
   render(): React.ReactElement<any> {
     if (this.state.error) {
       return (
-        <React.Fragment>
-          <code>{this.state.error.toString()}</code>
-        </React.Fragment>
+        <details open>
+          <summary>{this.state.error.message}</summary>
+          {this.state.error.stack.split('\n').map((item: string) => (
+            <pre style={{ fontSize: '1vw' }}>{item}</pre>
+          ))}
+        </details>
       );
     }
     const obj = cloneDeep(this.props.data);
     return (
       <React.Suspense fallback={null}>
-        {objectToReactElement(obj, this.props.onVDOMEvent)}
+        {objectToReactElement(
+          obj,
+          this.props.onVDOMEvent,
+          this.props.resolveImport
+        )}
       </React.Suspense>
     );
   }

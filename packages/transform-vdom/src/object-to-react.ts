@@ -67,7 +67,8 @@ export interface VDOMEl {
  */
 export function objectToReactElement(
   obj: VDOMEl,
-  onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void
+  onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void,
+  resolveImport: (path: string) => string
 ): React.ReactElement<any> {
   // Pack args for React.createElement
   let args: any = [];
@@ -86,11 +87,9 @@ export function objectToReactElement(
         )}. The 'import' map requires a 'package' and an optional 'module' property`
       );
     }
-    if (!obj.import.package.match(/^\.?\//)) {
-      obj.import.package = `//dev.jspm.io/${obj.import.package}`;
-    }
+    const path = resolveImport(obj.import.package);
     const component = React.lazy(() =>
-      eval(`import('${obj.import.package}')`).then((pkg: any) => {
+      eval(`import('${path}')`).then((pkg: any) => {
         if (pkg.default) {
           pkg = pkg.default;
         }
@@ -158,12 +157,17 @@ export function objectToReactElement(
       }
       args = args.concat(arrayToReactChildren(
         children as VDOMEl[],
-        onVDOMEvent
+        onVDOMEvent,
+        resolveImport
       ) as any);
     } else if (typeof children === 'string') {
       args[2] = children;
     } else if (typeof children === 'object') {
-      args[2] = objectToReactElement(children as VDOMEl, onVDOMEvent);
+      args[2] = objectToReactElement(
+        children as VDOMEl,
+        onVDOMEvent,
+        resolveImport
+      );
     } else {
       throw new Error(
         'children of a vdom element must be a string, object, null, or array of vdom nodes'
@@ -182,7 +186,8 @@ export function objectToReactElement(
  */
 function arrayToReactChildren(
   arr: Array<VDOMEl>,
-  onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void
+  onVDOMEvent: (targetName: string, event: SerializedEvent<any>) => void,
+  resolveImport: (path: string) => string
 ): React.ReactNodeArray {
   let result: React.ReactNodeArray = [];
 
@@ -193,7 +198,7 @@ function arrayToReactChildren(
     if (item === null) {
       continue;
     } else if (Array.isArray(item)) {
-      result.push(arrayToReactChildren(item, onVDOMEvent));
+      result.push(arrayToReactChildren(item, onVDOMEvent, resolveImport));
     } else if (typeof item === 'string') {
       result.push(item);
     } else if (typeof item === 'object') {
@@ -204,12 +209,13 @@ function arrayToReactChildren(
         attributes: item.attributes,
         children: item.children,
         eventHandlers: item.eventHandlers,
+        import: item.import,
         key: i
       };
       if (item.attributes && item.attributes.key) {
         keyedItem.key = item.attributes.key;
       }
-      result.push(objectToReactElement(keyedItem, onVDOMEvent));
+      result.push(objectToReactElement(keyedItem, onVDOMEvent, resolveImport));
     } else {
       throw new Error(`invalid vdom child: "${item}"`);
     }
